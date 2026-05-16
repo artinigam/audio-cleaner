@@ -4,26 +4,40 @@ use std::path::Path;
 use std::process::Command;
 
 pub async fn probe_media_file(path: &Path) -> Result<MediaFile, String> {
+    // Use absolute path to ffprobe (Homebrew location on macOS)
+    let ffprobe_path = if std::path::Path::new("/opt/homebrew/bin/ffprobe").exists() {
+        "/opt/homebrew/bin/ffprobe"
+    } else if std::path::Path::new("/usr/local/bin/ffprobe").exists() {
+        "/usr/local/bin/ffprobe"
+    } else {
+        "ffprobe" // fallback to PATH
+    };
+
     // Run ffprobe to get media information
-    let output = Command::new("ffprobe")
+    let output = Command::new(ffprobe_path)
         .args(&[
-            "-v", "quiet",
+            "-v", "error", // Show errors instead of quiet
             "-print_format", "json",
             "-show_format",
             "-show_streams",
             path.to_str().ok_or("Invalid path")?,
         ])
         .output()
-        .map_err(|e| format!("Failed to run ffprobe: {}. Make sure FFmpeg is installed.", e))?;
-
-    if !output.status.success() {
-        let stderr = String::from_utf8_lossy(&output.stderr);
-        return Err(format!("ffprobe failed: {}", stderr));
-    }
+        .map_err(|e| format!("Failed to run ffprobe ({}): {}. Make sure FFmpeg is installed.", ffprobe_path, e))?;
 
     let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+
+    if !output.status.success() {
+        return Err(format!("ffprobe failed: {} (stdout: {})", stderr, stdout));
+    }
+
+    if stdout.is_empty() {
+        return Err(format!("ffprobe returned no output. stderr: {}", stderr));
+    }
+
     let json: Value = serde_json::from_str(&stdout)
-        .map_err(|e| format!("Failed to parse ffprobe output: {}", e))?;
+        .map_err(|e| format!("Failed to parse ffprobe output: {}. Output was: {}", e, stdout))?;
 
     // Extract format information
     let format = json["format"]["format_name"]

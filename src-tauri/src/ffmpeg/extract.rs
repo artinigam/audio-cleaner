@@ -16,8 +16,17 @@ pub async fn extract_audio(media: &MediaFile, output: &Path) -> Result<(), Strin
             .map_err(|e| format!("Failed to create output directory: {}", e))?;
     }
 
+    // Use absolute path to ffmpeg (Homebrew location on macOS)
+    let ffmpeg_path = if std::path::Path::new("/opt/homebrew/bin/ffmpeg").exists() {
+        "/opt/homebrew/bin/ffmpeg"
+    } else if std::path::Path::new("/usr/local/bin/ffmpeg").exists() {
+        "/usr/local/bin/ffmpeg"
+    } else {
+        "ffmpeg" // fallback to PATH
+    };
+
     // Extract audio to WAV format: 48kHz, mono, 16-bit PCM
-    let status = Command::new("ffmpeg")
+    let output_result = Command::new(ffmpeg_path)
         .args(&[
             "-i",
             media.path.to_str().ok_or("Invalid input path")?,
@@ -32,11 +41,12 @@ pub async fn extract_audio(media: &MediaFile, output: &Path) -> Result<(), Strin
             "-y", // Overwrite output file
             output.to_str().ok_or("Invalid output path")?,
         ])
-        .status()
-        .map_err(|e| format!("Failed to run ffmpeg: {}. Make sure FFmpeg is installed.", e))?;
+        .output()
+        .map_err(|e| format!("Failed to run ffmpeg ({}): {}. Make sure FFmpeg is installed.", ffmpeg_path, e))?;
 
-    if !status.success() {
-        return Err("Audio extraction failed".to_string());
+    if !output_result.status.success() {
+        let stderr = String::from_utf8_lossy(&output_result.stderr);
+        return Err(format!("Audio extraction failed: {}", stderr));
     }
 
     // Validate output file exists and is non-empty

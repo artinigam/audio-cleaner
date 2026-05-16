@@ -1,4 +1,5 @@
 import { invoke } from '@tauri-apps/api/core';
+import { open } from '@tauri-apps/plugin-dialog';
 import { useState } from 'react';
 
 interface MediaFile {
@@ -27,13 +28,38 @@ interface AudioStream {
 }
 
 function TestStep2() {
-  const [videoPath, setVideoPath] = useState('/Users/artinigam/path/to/video.mp4');
+  const [videoPath, setVideoPath] = useState('');
   const [outputPath, setOutputPath] = useState('/tmp/test_audio.wav');
   const [mediaInfo, setMediaInfo] = useState<MediaFile | null>(null);
-  const [status, setStatus] = useState('Ready to test');
+  const [status, setStatus] = useState('Click "Browse" to select a video file');
   const [error, setError] = useState('');
 
+  const browseFile = async () => {
+    try {
+      const selected = await open({
+        multiple: false,
+        filters: [{
+          name: 'Video Files',
+          extensions: ['mp4', 'mov', 'mkv', 'webm', 'avi', 'flv', 'm4v']
+        }]
+      });
+
+      if (selected && typeof selected === 'string') {
+        setVideoPath(selected);
+        setStatus('File selected. Ready to test!');
+        setError('');
+        setMediaInfo(null);
+      }
+    } catch (err) {
+      setError(`Failed to open file picker: ${err}`);
+    }
+  };
+
   const testProbe = async () => {
+    if (!videoPath) {
+      setError('Please select a video file first');
+      return;
+    }
     try {
       setStatus('Probing video file...');
       setError('');
@@ -52,6 +78,11 @@ function TestStep2() {
   };
 
   const testExtract = async () => {
+    if (!videoPath) {
+      setError('Please select a video file first');
+      return;
+    }
+
     try {
       setStatus('Extracting audio (this may take a while)...');
       setError('');
@@ -75,7 +106,7 @@ function TestStep2() {
       <div style={{ marginBottom: '20px', padding: '15px', background: '#f0f0f0', borderRadius: '8px' }}>
         <h3>Instructions:</h3>
         <ol>
-          <li>Update the video path below to point to a real video file on your system</li>
+          <li>Click "Browse" to select a video file (works from Downloads, Desktop, anywhere!)</li>
           <li>Click "Test Probe" to read video metadata</li>
           <li>Click "Test Extract" to extract audio to WAV format (48kHz, mono, 16-bit)</li>
           <li>Verify the output with: <code>ffprobe {outputPath}</code></li>
@@ -84,21 +115,38 @@ function TestStep2() {
 
       <div style={{ marginBottom: '20px' }}>
         <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
-          Video File Path:
+          Video File:
         </label>
-        <input
-          type="text"
-          value={videoPath}
-          onChange={(e) => setVideoPath(e.target.value)}
-          style={{
-            width: '100%',
-            padding: '8px',
-            fontSize: '14px',
-            border: '1px solid #ccc',
-            borderRadius: '4px'
-          }}
-          placeholder="/path/to/your/video.mp4"
-        />
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+          <button
+            onClick={browseFile}
+            style={{
+              padding: '10px 20px',
+              fontSize: '14px',
+              backgroundColor: '#6c757d',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              whiteSpace: 'nowrap'
+            }}
+          >
+            📁 Browse...
+          </button>
+          <input
+            type="text"
+            value={videoPath}
+            onChange={(e) => setVideoPath(e.target.value)}
+            style={{
+              flex: 1,
+              padding: '8px',
+              fontSize: '14px',
+              border: '1px solid #ccc',
+              borderRadius: '4px'
+            }}
+            placeholder="Select a video file or paste path here"
+          />
+        </div>
       </div>
 
       <div style={{ marginBottom: '20px' }}>
