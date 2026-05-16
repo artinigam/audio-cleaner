@@ -1,0 +1,30 @@
+{
+  "name": "audio-cleaner",
+  "version": "1.0.0",
+  "description": "**Desktop-first audio enhancement tool for YouTube creators**",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "tauri": "source ~/.cargo/env && tauri",
+    "tauri:dev": "source ~/.cargo/env && tauri dev",
+    "tauri:build": "source ~/.cargo/env && tauri build"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@tauri-apps/api": "^2.11.0",
+    "@tauri-apps/cli": "^2.11.1",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.2",
+    "typescript": "^6.0.3",
+    "vite": "^8.0.13"
+  }
+}

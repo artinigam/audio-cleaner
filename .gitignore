@@ -1,0 +1,128 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build outputs
+dist/
+dist-ssr/
+build/
+*.local
+
+# Tauri build
+src-tauri/target/
+src-tauri/Cargo.lock
+
+# Development
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Testing
+coverage/
+.nyc_output/
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.bak
+*.swp
+
+# Audio/Video test files
+*.mp4
+*.mov
+*.mkv
+*.webm
+*.avi
+*.wav
+*.mp3
+*.aac
+*.flac
+/test-videos/
+/test-audio/
+
+# ML models (if large, consider Git LFS)
+# public/models/*.onnx
+# Uncomment above if models are > 50MB
+
+# IDE specific
+.vscode/settings.json
+.vscode/launch.json
+*.code-workspace
+
+# Cache
+.cache/
+.parcel-cache/
+.turbo/
+
+# Debug
+*.tsbuildinfo
+.eslintcache
+
+# MacOS
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+ehthumbs.db
+Desktop.ini
+
+# Editor backups
+*~
+*.swp
+*.swo
+
+# Build artifacts
+*.dmg
+*.app
+*.exe
+*.msi
+*.deb
+*.rpm
+*.AppImage
+
+# Certificates and keys (important for security)
+*.pem
+*.key
+*.p12
+*.pfx
+*.cer
+*.crt
+secrets/
+
+# License keys and sensitive data
+license.key
+*.license
+activation.dat
+
+# Analytics and crash reports (if stored locally)
+analytics/
+crash-reports/
+
+.claude
+.vscode
