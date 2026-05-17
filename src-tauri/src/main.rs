@@ -2,10 +2,12 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 mod commands;
+mod enhancement;
 mod ffmpeg;
 mod models;
+mod utils;
 
-use commands::media::{extract_audio_from_media, probe_media_file};
+use commands::media::{enhance_audio_file, extract_audio_from_media, probe_media_file};
 
 fn main() {
     tauri::Builder::default()
@@ -13,7 +15,8 @@ fn main() {
         .plugin(tauri_plugin_dialog::init())
         .invoke_handler(tauri::generate_handler![
             probe_media_file,
-            extract_audio_from_media
+            extract_audio_from_media,
+            enhance_audio_file
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
