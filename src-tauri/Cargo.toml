@@ -21,6 +21,7 @@ ort = "2.0.0-rc.12"      # ONNX Runtime for ML inference
 ndarray = "0.17"         # N-dimensional arrays for tensor operations (must match ort's version)
 hound = "3.5"            # WAV file I/O
 rubato = "0.15"          # Audio resampling
+uuid = { version = "1.0", features = ["v4"] }  # For temporary file names
 # dasp will be used later for filters if needed
 
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]

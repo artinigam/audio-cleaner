@@ -1,7 +1,7 @@
-import TestStep2 from "./TestStep2";
+import TestPipeline from "./TestPipeline";
 
 function App() {
-  return <TestStep2 />;
+  return <TestPipeline />;
 }
 
 export default App;

@@ -8,6 +8,7 @@ mod models;
 mod utils;
 
 use commands::media::{enhance_audio_file, extract_audio_from_media, probe_media_file};
+use commands::pipeline::{process_video_file, generate_preview};
 
 fn main() {
     tauri::Builder::default()
@@ -16,7 +17,9 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             probe_media_file,
             extract_audio_from_media,
-            enhance_audio_file
+            enhance_audio_file,
+            process_video_file,
+            generate_preview
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
