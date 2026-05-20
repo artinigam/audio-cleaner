@@ -30,6 +30,8 @@ interface AudioStream {
 function TestStep2() {
   const [videoPath, setVideoPath] = useState('');
   const [outputPath, setOutputPath] = useState('/tmp/test_audio.wav');
+  const [enhancedPath, setEnhancedPath] = useState('/tmp/test_audio_enhanced.wav');
+  const [intensity, setIntensity] = useState(0.7);
   const [mediaInfo, setMediaInfo] = useState<MediaFile | null>(null);
   const [status, setStatus] = useState('Click "Browse" to select a video file');
   const [error, setError] = useState('');
@@ -83,6 +85,15 @@ function TestStep2() {
       return;
     }
 
+    // Validate output path is not in a protected directory
+    const protectedDirs = ['/Users/', '~/Downloads', '~/Desktop', '~/Documents'];
+    const isProtected = protectedDirs.some(dir => outputPath.includes(dir.replace('~', '/Users/artinigam')));
+
+    if (isProtected && !outputPath.startsWith('/tmp')) {
+      setError('❌ Cannot write to protected directories (Downloads, Desktop, Documents). Please use /tmp/ or select a different location.');
+      return;
+    }
+
     try {
       setStatus('Extracting audio (this may take a while)...');
       setError('');
@@ -99,6 +110,29 @@ function TestStep2() {
     }
   };
 
+  const testEnhance = async () => {
+    if (!outputPath) {
+      setError('Please extract audio first');
+      return;
+    }
+
+    try {
+      setStatus(`Enhancing audio (intensity: ${(intensity * 100).toFixed(0)}%)...`);
+      setError('');
+
+      await invoke('enhance_audio_file', {
+        inputPath: outputPath,
+        outputPath: enhancedPath,
+        intensity: intensity
+      });
+
+      setStatus(`✅ Audio enhanced successfully to: ${enhancedPath}`);
+    } catch (err) {
+      setError(`❌ Enhancement failed: ${err}`);
+      setStatus('Failed');
+    }
+  };
+
   return (
     <div style={{ padding: '20px', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
       <h1>Step 2 Testing - Media Probing + Audio Extraction</h1>
@@ -107,9 +141,11 @@ function TestStep2() {
         <h3>Instructions:</h3>
         <ol>
           <li>Click "Browse" to select a video file (works from Downloads, Desktop, anywhere!)</li>
-          <li>Click "Test Probe" to read video metadata</li>
-          <li>Click "Test Extract" to extract audio to WAV format (48kHz, mono, 16-bit)</li>
-          <li>Verify the output with: <code>ffprobe {outputPath}</code></li>
+          <li>Click "1️⃣ Test Probe" to read video metadata</li>
+          <li>Click "2️⃣ Test Extract" to extract audio to WAV format (48kHz, mono, 16-bit)</li>
+          <li>Adjust intensity slider (0-100%) for enhancement strength</li>
+          <li>Click "3️⃣ Test Enhance" to apply AI enhancement (placeholder for now)</li>
+          <li>Compare original vs enhanced: <code>afplay /tmp/test_audio.wav</code> vs <code>afplay /tmp/test_audio_enhanced.wav</code></li>
         </ol>
       </div>
 
@@ -166,9 +202,49 @@ function TestStep2() {
           }}
           placeholder="/tmp/output.wav"
         />
+        <div style={{ fontSize: '12px', color: '#dc3545', marginTop: '5px' }}>
+          ⚠️ Use /tmp/ directory to avoid macOS permission issues
+        </div>
       </div>
 
-      <div style={{ marginBottom: '20px', display: 'flex', gap: '10px' }}>
+      <div style={{ marginBottom: '20px' }}>
+        <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+          Enhancement Intensity: {(intensity * 100).toFixed(0)}%
+        </label>
+        <input
+          type="range"
+          min="0"
+          max="1"
+          step="0.1"
+          value={intensity}
+          onChange={(e) => setIntensity(parseFloat(e.target.value))}
+          style={{ width: '100%' }}
+        />
+        <div style={{ fontSize: '12px', color: '#666', marginTop: '5px' }}>
+          0% = No enhancement (original), 100% = Maximum enhancement
+        </div>
+      </div>
+
+      <div style={{ marginBottom: '20px' }}>
+        <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+          Enhanced Output Path:
+        </label>
+        <input
+          type="text"
+          value={enhancedPath}
+          onChange={(e) => setEnhancedPath(e.target.value)}
+          style={{
+            width: '100%',
+            padding: '8px',
+            fontSize: '14px',
+            border: '1px solid #ccc',
+            borderRadius: '4px'
+          }}
+          placeholder="/tmp/output_enhanced.wav"
+        />
+      </div>
+
+      <div style={{ marginBottom: '20px', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
         <button
           onClick={testProbe}
           style={{
@@ -181,7 +257,7 @@ function TestStep2() {
             cursor: 'pointer'
           }}
         >
-          Test Probe
+          1️⃣ Test Probe
         </button>
 
         <button
@@ -196,7 +272,22 @@ function TestStep2() {
             cursor: 'pointer'
           }}
         >
-          Test Extract
+          2️⃣ Test Extract
+        </button>
+
+        <button
+          onClick={testEnhance}
+          style={{
+            padding: '10px 20px',
+            fontSize: '16px',
+            backgroundColor: '#fd7e14',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer'
+          }}
+        >
+          3️⃣ Test Enhance
         </button>
       </div>
 

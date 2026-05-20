@@ -1,3 +1,4 @@
+use crate::enhancement::deepfilternet;
 use crate::ffmpeg::{extract, probe};
 use crate::models::media::MediaFile;
 use std::path::PathBuf;
@@ -26,4 +27,21 @@ pub async fn extract_audio_from_media(
     // Then extract the audio
     let output_path = PathBuf::from(output_path);
     extract::extract_audio(&media, &output_path).await
+}
+
+#[tauri::command]
+pub async fn enhance_audio_file(
+    input_path: String,
+    output_path: String,
+    intensity: f32,
+) -> Result<(), String> {
+    let input_path = PathBuf::from(input_path);
+    let output_path = PathBuf::from(output_path);
+
+    // Validate intensity range
+    if !(0.0..=1.0).contains(&intensity) {
+        return Err("Intensity must be between 0.0 and 1.0".to_string());
+    }
+
+    deepfilternet::enhance_audio(&input_path, &output_path, intensity).await
 }
